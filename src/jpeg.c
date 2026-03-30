@@ -34,7 +34,7 @@ void jpeg_crtmod_768x512_65536() {
 
   _iocs_g_clr_on();
 
-  // Enter supervisor mode (Preserves current mode if already in supervisor)
+  // Enter supervisor mode (return -1 if already in supervisor)
   int32_t usp = _iocs_b_super(0);
 
   // Wait for VSync
@@ -74,11 +74,8 @@ void jpeg_crtmod_768x512_65536() {
     PALETTE_REG[ofs++] = (uint16_t)i;
   }
 
-  // Restore previous mode (Returns to user mode only if it was originally in
-  // user mode)
-  if (usp >= 0) {
-    _iocs_b_super(usp);
-  }
+  // Return to user mode if necessary
+  if (usp >= 0) _iocs_b_super(usp);
 }
 
 //
@@ -373,8 +370,14 @@ int32_t jpeg_draw(JPEG *jpeg, uint8_t *buffer, size_t size,
   int32_t ofs_x = (512 - draw_w) / 2;
   int32_t ofs_y = (512 - draw_h) / 2;
 
+  // Enter supervisor mode (return -1 if already in supervisor)
+  int32_t usp = _iocs_b_super(0);
+
   // Execute the rendering loop
   rc = jpeg_render_scaled(jpeg, &image_info, step_fp, ofs_x, ofs_y);
+
+  // Return to user mode if necessary
+  if (usp >= 0) _iocs_b_super(usp);
 
   return rc;
 }
