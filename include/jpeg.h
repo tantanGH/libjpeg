@@ -25,7 +25,7 @@ void jpeg_fill_text_masks();
 void jpeg_open_text_masks();
 
 int32_t jpeg_open(JPEG* jpeg, int16_t brightness);
-void jpeg_close(JPEG* jpeg);
 int32_t jpeg_draw(JPEG* jpeg, uint8_t* buffer, size_t size, int16_t scale_mode);
+void jpeg_close(JPEG* jpeg);
 
 #endif

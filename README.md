@@ -17,13 +17,17 @@ elf2x68k環境向けのJPEGデコードCライブラリです。
 ```
 #include <jpeg.h>
 
-void jpeg_set_crt_768x512_65536_mode();
+void jpeg_crtmod_768x512_65536();
 void jpeg_fill_text_masks();
 void jpeg_open_text_masks();
+
 int32_t jpeg_open(JPEG* jpeg, int16_t brightness);
-void jpeg_close(JPEG* jpeg);
 int32_t jpeg_draw(JPEG* jpeg, uint8_t* buffer, size_t size, int16_t scale_mode);
+void jpeg_close(JPEG* jpeg);
 ```
+
+- JPEGデータは既にメモリ上にあることが前提です。
+- scale_mode は1~100を指定するとその倍率でセンタークリップ、0を指定すると長辺が512に自動フィットします
 
 使う時は、サブモジュールとして組み込むのが簡単です。例えばプロジェクト直下にて以下を実行します。
 
