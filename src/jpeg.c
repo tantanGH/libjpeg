@@ -103,7 +103,7 @@ void jpeg_fill_text_masks() {
 //  To prevent this, adjust the horizontal scroll and clear the text mask
 //  only for the center 512x512 area.
 //
-void jpen_open_text_masks() {
+void jpeg_open_text_masks() {
 
   // Adjust horizontal scroll positions for all graphic planes.
   _iocs_scroll(0, 512 - 128, 0);
