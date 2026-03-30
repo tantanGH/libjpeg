@@ -115,8 +115,31 @@ void jpeg_open_text_masks() {
   // Clear the center area of Text Plane 2.
   // The left and right margins remain masked with color code 0x0001
   // (near-black).
-  struct iocs_txfillptr txfil = {2, 128, 0, 512, 512, 0x0000};
+  struct iocs_txfillptr txfil = { 2, 128, 0, 512, 512, 0x0000 };
   _iocs_txfill(&txfil);
+}
+
+//
+//  Reset text masks to the original state
+//
+void jpeg_reset_text_masks() {
+
+    // Reset horizontal scroll positions for all graphic planes.
+    _iocs_scroll(0, 0, 0);
+    _iocs_scroll(1, 0, 0);
+    _iocs_scroll(2, 0, 0);
+    _iocs_scroll(3, 0, 0);
+
+    // Clear full text plane 2
+    struct iocs_txfillptr txfil = { 2, 0, 0, 768, 512, 0x0000 };
+    _iocs_txfill(&txfil);
+
+    // Reset text pallets
+    _iocs_tpalet2(4,-2);
+    _iocs_tpalet2(5,-2);
+    _iocs_tpalet2(6,-2);
+    _iocs_tpalet2(7,-2);
+
 }
 
 //

@@ -20,6 +20,7 @@ elf2x68k環境向けのJPEGデコードCライブラリです。
 void jpeg_crtmod_768x512_65536();
 void jpeg_fill_text_masks();
 void jpeg_open_text_masks();
+void jpeg_reset_text_masks();
 
 int32_t jpeg_open(JPEG* jpeg, int16_t brightness);
 int32_t jpeg_draw(JPEG* jpeg, uint8_t* buffer, size_t size, int16_t scale_mode);
