@@ -35,7 +35,7 @@ void jpeg_crtmod_768x512_65536() {
   _iocs_g_clr_on();
 
   // Enter supervisor mode (Preserves current mode if already in supervisor)
-  uint32_t usp = _iocs_b_super(0);
+  int32_t usp = _iocs_b_super(0);
 
   // Wait for VSync
   WAIT_VDISP;
@@ -76,7 +76,9 @@ void jpeg_crtmod_768x512_65536() {
 
   // Restore previous mode (Returns to user mode only if it was originally in
   // user mode)
-  _iocs_b_super(usp);
+  if (usp >= 0) {
+    _iocs_b_super(usp);
+  }
 }
 
 //
