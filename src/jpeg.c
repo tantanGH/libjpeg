@@ -30,7 +30,7 @@
 //
 //  Set CRTC to 768x512, 65536-color mode
 //
-void jpeg_set_crt_768x512_65536_mode() {
+void jpeg_crtmod_768x512_65536() {
 
   // Enter supervisor mode (Preserves current mode if already in supervisor)
   uint32_t usp = _iocs_b_super(0);
