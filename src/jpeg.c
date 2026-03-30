@@ -353,11 +353,17 @@ int32_t jpeg_draw(JPEG *jpeg, uint8_t *buffer, size_t size,
   // Calculate scaling parameters (DDA steps and offsets)
   uint32_t step_fp;
   if (scale_mode <= 0) {
-    // Auto-Fit: Match the longest side to 512px
-    int32_t max_side = (image_info.m_width > image_info.m_height)
-                           ? image_info.m_width
-                           : image_info.m_height;
-    step_fp = (max_side << 16) / 512;
+
+    // Auto-Fit Logic
+    int32_t max_side = (image_info.m_width > image_info.m_height) 
+                        ? image_info.m_width : image_info.m_height;
+
+    if (max_side > 512) {
+      step_fp = (max_side << 16) / 512;
+    } else {
+      step_fp = 1L << 16;
+    }
+    
   } else {
     // Percentage: Convert 1-100% to a fixed-point step
     // (e.g., 50% means we step 2.0 source pixels for every 1 destination pixel)
