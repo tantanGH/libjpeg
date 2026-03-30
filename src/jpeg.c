@@ -32,6 +32,8 @@
 //
 void jpeg_crtmod_768x512_65536() {
 
+  _iocs_g_clr_on();
+
   // Enter supervisor mode (Preserves current mode if already in supervisor)
   uint32_t usp = _iocs_b_super(0);
 
