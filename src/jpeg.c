@@ -5,7 +5,6 @@
 #include <x68k/iocs.h>
 
 #include "jpeg.h"
-#include "picojpeg.h"
 
 #define CRTC_R00    ((volatile uint16_t *)0xE80000) // CRTC R00-R08 (Inside X68000 p232)
 #define CRTC_R12    ((volatile uint16_t *)0xE80018) // CRTC R12 for scroll (Insite X68000 p197)
@@ -239,6 +238,9 @@ static void init_color_lookup_tables(JPEG *jpeg) {
   jpeg->color_table_initialized = 1; // Mark LUT as ready
 }
 
+#ifdef __USE_PICOJPEG__
+#include "picojpeg.h"
+
 //
 //  Render the JPEG with DDA scaling
 //
@@ -410,3 +412,87 @@ int32_t jpeg_draw(JPEG *jpeg, uint8_t *buffer, size_t size,
 
   return rc;
 }
+
+#endif
+
+
+#ifdef __USE_STB_IMAGE__
+
+#define STBI_NO_THREAD_LOCALS
+#define STBI_NO_STDIO     
+#define STBI_NO_SIMD      
+#define STBI_ONLY_JPEG
+#define STB_IMAGE_IMPLEMENTATION
+
+#include <himem.h>
+#define STBI_MALLOC     himem_malloc
+#define STBI_REALLOC    himem_realloc
+#define STBI_FREE       himem_free 
+
+#include "stb_image.h"
+
+int32_t jpeg_draw(JPEG *jpeg, uint8_t *buffer, size_t size, int16_t scale_mode) {
+    int w, h, channels;
+    
+    // 1. デコード（RGB 24bit形式で一括展開）
+    // stbi_load_from_memory は内部で malloc を使うので、
+    // 事前に十分なメインメモリを確保しておくことが前提です。
+    uint8_t *img_data = stbi_load_from_memory(buffer, (int)size, &w, &h, &channels, 3);
+    if (!img_data) {
+        const char *reason = stbi_failure_reason();
+        printf("JPEG Error: %s\n", reason); // これで「unsupported format」か「out of memory」かわかる
+        return -1;
+    }
+
+    // 2. スケーリングパラメータの計算 (以前のロジックを流用)
+    uint32_t step_fp;
+    if (scale_mode <= 0) {
+        int max_side = (w > h) ? w : h;
+        step_fp = (max_side > 512) ? (max_side << 16) / 512 : (1L << 16);
+    } else {
+        step_fp = (100L << 16) / scale_mode;
+    }
+
+    int draw_w = ((uint32_t)w << 16) / step_fp;
+    int draw_h = ((uint32_t)h << 16) / step_fp;
+    int ofs_x = (512 - draw_w) / 2;
+    int ofs_y = (512 - draw_h) / 2;
+
+    if (!jpeg->color_table_initialized) init_color_lookup_tables(jpeg);
+
+    // 3. VRAMへの転送（DDAスケーリング）
+    int32_t usp = _iocs_b_super(0);
+
+    for (int gy = 0; gy < draw_h; gy++) {
+        int target_y = gy + ofs_y;
+        if (target_y < 0 || target_y > 511) continue;
+
+        uint16_t *vram_line = (uint16_t *)(GVRAM + (target_y << 9));
+        
+        // ソースの参照行を計算 (Fixed Point)
+        uint32_t src_y = ((uint32_t)gy * step_fp) >> 16;
+        if (src_y >= h) break;
+        uint8_t *src_row = img_data + (src_y * w * 3);
+
+        for (int gx = 0; gx < draw_w; gx++) {
+            int target_x = gx + ofs_x;
+            if (target_x < 0 || target_x > 511) continue;
+
+            uint32_t src_x = ((uint32_t)gx * step_fp) >> 16;
+            if (src_x >= w) break;
+
+            uint8_t *p = src_row + (src_x * 3);
+            vram_line[target_x] = jpeg->rgb555_r[p[0]] | 
+                                  jpeg->rgb555_g[p[1]] | 
+                                  jpeg->rgb555_b[p[2]] | 1;
+        }
+    }
+
+    if (usp >= 0) _iocs_b_super(usp);
+
+    // 4. 解放
+    stbi_image_free(img_data);
+    return 0;
+}
+
+#endif
