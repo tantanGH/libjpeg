@@ -142,23 +142,6 @@ void jpeg_reset_text_masks() {
 }
 
 //
-//  Workaround for a known bug in m68k-newlib's memcpy.
-//  Large transfers (>32KB) to non-long word boundary address can fail
-//
-static inline void safe_memcpy(void *dst, const void *src, size_t len) {
-  uint8_t *d = (uint8_t *)dst;
-  const uint8_t *s = (const uint8_t *)src;
-  while (len > 0) {
-    // Chunk the transfer into safe 32KB blocks
-    size_t chunk = (len > 0x8000) ? 0x8000 : len;
-    memcpy(d, s, chunk);
-    d += chunk;
-    s += chunk;
-    len -= chunk;
-  }
-}
-
-//
 //  Data fetch callback for the picojpeg library.
 //  Provides JPEG data from an in-memory buffer.
 //
@@ -175,7 +158,7 @@ static uint8_t pjpeg_need_bytes_callback(uint8_t *pBuf, uint8_t buf_size,
   uint32_t n = (buf_size < remain) ? buf_size : remain;
 
   if (n > 0) {
-    safe_memcpy(pBuf, jpeg_buffer + jpeg_buffer_ofs, n);
+    memcpy(pBuf, jpeg_buffer + jpeg_buffer_ofs, n);
   }
 
   *pBytes_actually_read = (unsigned char)n;
