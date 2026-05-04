@@ -71,15 +71,17 @@ my_app/
  といった形でリンクしてください。000は全機種対応、030は68030以上、060は68060専用です。 
 
 --
+```
 //------------------------------------------------------------------------------
 // picojpeg.c v1.1 - Public domain, Rich Geldreich <richgel99@gmail.com>
 // Nov. 27, 2010 - Initial release
 // Feb. 9, 2013 - Added H1V2/H2V1 support, cleaned up macros, signed shift fixes 
 // Also integrated and tested changes from Chris Phoenix <cphoenix@gmail.com>.
 //------------------------------------------------------------------------------
+```
 
 --
-
+```
 /*
 ------------------------------------------------------------------------------
 This software is available under 2 licenses -- choose whichever you prefer.
@@ -121,3 +123,4 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
+```
